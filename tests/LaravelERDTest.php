@@ -2,10 +2,12 @@
 
 namespace Kevincobain2000\LaravelERD\Tests;
 
-class LaravelERDTest extends TestCase
+use PHPUnit\Framework\Attributes\Test;
+
+final class LaravelERDTest extends TestCase
 {
-    /** @test */
-    public function true_is_true()
+    #[Test]
+    public function true_is_true(): void
     {
         $this->assertTrue(true);
     }
