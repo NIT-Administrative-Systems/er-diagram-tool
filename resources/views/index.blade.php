@@ -9,7 +9,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.1.46/go.js"></script>
     <script src="https://unpkg.com/gojs@2.1.47/extensions/Figures.js"></script>
-    <title>Interactive CAP ERD</title>
+    <title>Interactive Entity Relationship Diagram | {{ $appName }}</title>
 </head>
 <body class="bg-gray-100 tracking-wide bg-gray-200">
 <div id="app" v-cloak class="w-full flex">
@@ -268,8 +268,9 @@
                         'class': 'input-relation-type-checkbox',
                         'name': 'subscribe-relation-type',
                         "data-feed": this.type
-                    }).val(this.type)
-                        .prop('checked', this.checked)
+                    })
+                        .val(this.type)
+                        .prop('checked', this.type === 'BelongsTo') // Super noisy if you default them all on
                 ));
             }
         });
@@ -360,15 +361,10 @@
         myDiagram.model.linkDataArray = newLinkDataArray
     }
 
-    var docs = {!! json_encode($docs) !!}
-    console.log(docs);
-    docs = JSON.parse(docs)
-    nodeDataArray = docs.node_data
-    linkDataArray = docs.link_data
-
+    nodeDataArray = @json($node_data);
+    linkDataArray = @json($link_data);
 
     window.addEventListener('DOMContentLoaded', init);
-
 </script>
 </body>
 </html>
