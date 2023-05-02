@@ -2,8 +2,7 @@
 
 namespace Kevincobain2000\LaravelERD;
 
-use File;
-use Schema;
+use Illuminate\Support\Collection;
 use ReflectionClass;
 use ReflectionMethod;
 use Throwable;
@@ -11,10 +10,12 @@ use TypeError;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 
 class LaravelERD
 {
-    public function getModelsNames(string $modelsPath)
+    public function getModelsNames(string $modelsPath): Collection
     {
         return collect(File::allFiles($modelsPath))
             ->map(function ($item) {
@@ -39,7 +40,7 @@ class LaravelERD
             });
     }
 
-    public function getLinkDataArray(string $modelsPath)
+    public function getLinkDataArray(string $modelsPath): array
     {
         $linkDataArray = [];
         $modelNames = $this->getModelsNames($modelsPath);
@@ -55,7 +56,7 @@ class LaravelERD
         return $linkDataArray;
     }
 
-    public function getNodeDataArray(string $modelsPath)
+    public function getNodeDataArray(string $modelsPath): array
     {
         $nodeDataArray = [];
         $modelNames = $this->getModelsNames($modelsPath);
@@ -69,7 +70,7 @@ class LaravelERD
         return $nodeDataArray;
     }
 
-    function removeDuplicateModelNames($modelNames)
+    function removeDuplicateModelNames($modelNames): array
     {
         $finalModelNames = collect($modelNames)
             ->map(function($modelName) {
@@ -85,7 +86,7 @@ class LaravelERD
         return $finalModelNames->all();
     }
 
-    private function extractNamespace($file)
+    private function extractNamespace($file): string
     {
         $ns = NULL;
         $handle = fopen($file, "r");
@@ -102,12 +103,6 @@ class LaravelERD
         return $ns;
     }
 
-    /**
-     * Relationships
-     *
-     * @param Model $model
-     * @return array of relationships
-     */
     private function getRelationships(Model $model): array
     {
         $relationships = [];
@@ -179,7 +174,7 @@ class LaravelERD
         ];
     }
 
-    private function getLinks(Model $model)
+    private function getLinks(Model $model): array
     {
         $relationships = $this->getRelationships($model);
         $linkItems = [];
