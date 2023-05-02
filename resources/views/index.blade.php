@@ -261,7 +261,7 @@
             if ($.inArray(this.type, appended) == -1) {
                 // append
                 appended.push(this.type)
-                $("#filter-by-relation-type").append($("<div class='text-sm'>").text(this.type).prepend(
+                $("#filter-by-relation-type").append($("<div class='text-sm'>").text('' + this.type).prepend(
                     $("<input>").attr({
                         'type': 'checkbox',
                         'checked': true,
@@ -297,25 +297,52 @@
     }
 
     function loadFilterByTableNames() {
-        var json = nodeDataArray;
         var appended = [];
-        $.each(json, function(i, v) {
-            // check if doesn't exist in the array
-            if ($.inArray(this.key, appended) == -1) {
-                // append
-                appended.push(this.key)
-                $("#filter-by-table-name").append($("<div class='text-sm'>").text(this.key).prepend(
+        var unbucketedNodes = nodeDataArray;
+
+        var nodesByDomain = unbucketedNodes.reduce((group, model) => {
+           const { domain } = model;
+
+           console.log(domain);
+
+            group[domain] = group[domain] ?? [];
+            group[domain].push(model);
+
+            return group;
+        }, {});
+
+        for (const domain in nodesByDomain) {
+            $("#filter-by-table-name").append(
+                $("<h2 class='pt-2'>").append(
                     $("<input>").attr({
                         'type': 'checkbox',
                         'checked': true,
-                        'class': 'input-table-name-checkbox',
-                        'name': 'subscribe-table-name',
-                        "data-feed": this.key
-                    }).val(this.key)
-                        .prop('checked', this.checked)
-                ));
-            }
-        });
+                        'class': 'input-domain-checkbox',
+                        'name': 'subscribe-domain',
+                        'data-domain': domain,
+                    })
+                ).append(' ' + domain)
+            );
+
+            $.each(nodesByDomain[domain], function (i, v) {
+                // check if doesn't exist in the array
+                if ($.inArray(this.key, appended) == -1) {
+                    // append
+                    appended.push(this.key)
+                    $("#filter-by-table-name").append($("<div class='text-sm'>").text(' ' + this.key).prepend(
+                        $("<input>").attr({
+                            'type': 'checkbox',
+                            'checked': true,
+                            'class': 'input-table-name-checkbox',
+                            'name': 'subscribe-table-name',
+                            'data-feed': this.key,
+                            'data-domain': this.domain,
+                        }).val(this.key)
+                            .prop('checked', this.checked)
+                    ));
+                }
+            });
+        };
 
         $(".input-table-name-checkbox").on('change', function() {
             setCheckboxesForTableNames();
