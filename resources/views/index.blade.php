@@ -14,15 +14,20 @@
 <body class="bg-gray-100 tracking-wide bg-gray-200">
 <div id="app" v-cloak class="w-full flex">
     <aside class="text-xl text-grey-darkest break-all bg-gray-200 pl-2 h-screen sticky top-1 overflow-auto">
-        <b class="text-sm"><label for="search">Search</label></b>
-        <div class="text-sm flex">
-            <div class="flex-initial">
-                <input type="text" placeholder="Model name..." class="block border py-2 px-3 text-grey-darkest block" id="search" onkeypress="if (event.keyCode === 13) searchDiagram()">
+        <b class="text-sm"><label for="search">Search &amp; Filter by Model</label></b>
+        <div class="text-sm flex pb-4">
+            <div class="flex-initial flex-grow">
+                <input type="text" placeholder="Model name..." class="block border py-2 px-3 text-grey-darkest w-full" id="search" onkeypress="if (event.keyCode === 13) searchDiagram()">
             </div>
             <div class="flex-initial">
                 <button class="block border bg-blue-200 hover:bg-blue-300 p-2 h-100" onclick="searchDiagram()">Search</button>
             </div>
         </div>
+
+        <div class="text-sm">
+            <input type="checkbox" id="input-table-names-checkbox-check-all"> check all
+        </div>
+        <div id="filter-by-table-name"></div>
 
         <b class="text-sm">Filter by Relation Type</b>
         <div class="text-sm">
@@ -30,11 +35,6 @@
         </div>
 
         <div id="filter-by-relation-type"></div>
-        <b class="text-sm">Filter by Table Name</b>
-        <div class="text-sm">
-            <input type="checkbox" id="input-table-names-checkbox-check-all"> check all
-        </div>
-        <div id="filter-by-table-name"></div>
     </aside>
     <div class="pl-2 w-10/12 bg-gray-300">
         <div id="myDiagramDiv" style="background-color: white; width: 100%; height: 100vh"></div>
