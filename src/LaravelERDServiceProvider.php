@@ -4,6 +4,7 @@ namespace Kevincobain2000\LaravelERD;
 
 use Closure;
 use Illuminate\Database\Eloquent\Model;
+use Kevincobain2000\LaravelERD\Diagram\Ribbon;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 use Kevincobain2000\LaravelERD\Commands\LaravelERDCommand;
@@ -22,7 +23,7 @@ class LaravelERDServiceProvider extends PackageServiceProvider
     }
 
     /**
-     * @param Closure(Model):?Ribbon $extractorClosure
+     * @param Closure(Model):(null|Ribbon) $extractorClosure
      */
     static public function setRibbonClosure(Closure $extractorClosure): void
     {
@@ -30,7 +31,7 @@ class LaravelERDServiceProvider extends PackageServiceProvider
     }
 
     /**
-     * @return Closure(Model):?Ribbon $extractorClosure
+     * @return Closure(Model):(null|Ribbon) $extractorClosure
      */
     static public function getRibbonClosure(): Closure
     {

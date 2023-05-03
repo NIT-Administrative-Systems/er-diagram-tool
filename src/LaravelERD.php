@@ -125,9 +125,13 @@ class LaravelERD
                 }
                 $relationType = (new ReflectionClass($return))->getShortName();
                 $modelName = (new ReflectionClass($return->getRelated()))->getName();
-
-                $foreignKey = $return->getQualifiedForeignKeyName();
                 $parentKey = $return->getQualifiedParentKeyName();
+
+                // Some relationships don't have the qualified FK, so default to the "safe" value.
+                $foreignKey = '.';
+                if (method_exists($return, 'getQualifiedForeignKeyName')) {
+                    $foreignKey = $return->getQualifiedForeignKeyName();
+                }
 
                 $relationships[$method->getName()] = [
                     'type'        => $relationType,
@@ -155,11 +159,7 @@ class LaravelERD
 
         foreach ($columns as $column) {
             $keyName = $model->getKeyName();
-            if (is_array($keyName)) {
-                $isPrimaryKey = in_array($column, $keyName);
-            } else {
-                $isPrimaryKey = $column == $keyName;
-            }
+            $isPrimaryKey = $column == $keyName;
 
             $nodeItems[] = [
                 "name"   => $column,
@@ -215,6 +215,6 @@ class LaravelERD
 
     private function domainName(Model $model): string
     {
-        return Str::of(get_class($model))->match('/\\\Domains\\\([^\\\]*)\\\/i') ?: 'Uncategorized';
+        return Str::of(get_class($model))->match('/\\\Domains\\\([^\\\]*)\\\/i')->toString() ?: 'Uncategorized';
     }
 }
