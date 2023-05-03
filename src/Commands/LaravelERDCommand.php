@@ -41,7 +41,7 @@ class LaravelERDCommand extends Command
             view('erd::index')
                 ->with([
                     'appName' => $this->appName,
-                    'routingType' => $this->routingType,
+                    'routingType' => $this->routingType->value,
                     'link_data' => $modelReflector->getLinkDataArray($this->modelsPath),
                     'node_data' => $modelReflector->getNodeDataArray($this->modelsPath),
                 ])

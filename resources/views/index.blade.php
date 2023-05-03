@@ -202,7 +202,7 @@
                     selectionAdorned: true,
                     layerName: "Foreground",
                     reshapable: true,
-                    routing: go.Link.Normal,
+                    routing: go.Link.{{ $routingType }},
                     corner: 5,
                     curve: go.Link.Orthogonal,
                     curviness: 0,
