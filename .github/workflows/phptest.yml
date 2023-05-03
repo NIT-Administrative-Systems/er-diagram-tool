@@ -47,12 +47,15 @@ jobs:
         if: github.actor != 'dependabot[bot]' && always()
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          files: .build/junit.xml
+          files: junit.xml
 
       - name: Record Coverage
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: php vendor/bin/php-coveralls --coverage_clover=clover.xml --json_path=coveralls-upload.json
+        run: |
+          # Using it stand-alone since they're a little behind on Symfony components, which would cause conflicts.
+          composer global require php-coveralls/php-coveralls
+          php vendor/bin/php-coveralls --coverage_clover=clover.xml --json_path=coveralls-upload.json
 
       - name: Run Larastan 👨
         run: ./vendor/bin/phpstan analyse --no-progress --error-format=checkstyle > larastan.xml
