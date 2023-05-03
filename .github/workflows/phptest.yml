@@ -16,21 +16,51 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Install PHP with extensions
-        uses: shivammathur/setup-php@v2
+      - name: Setup PHP
+        uses: shivammathur/setup-php@2.23.0
         with:
-          coverage: pcov
-          extensions: intl, gd, zip, pdo, sqlite, pdo_sqlite, dom, curl, libxml, mbstring, fileinfo, exif, iconv
-          ini-values: memory_limit=-1,disable_functions="",pcov.exclude="~(vendor|tests|node_modules)~",pcov.directory="./"
           php-version: ${{ matrix.php-versions }}
-          tools: composer:v2
+          coverage: xdebug
 
-      - name: Composer Install
-        run: composer install
+      - name: Validate composer.json and composer.lock
+        run: composer validate
 
-      - name: PHPUNIT Tests
-        run: |
-            ./vendor/bin/phpunit
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v3.2.2
+        with:
+          path: vendor
+          key: php-${{ matrix.php-versions }}-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            php-${{ matrix.php-versions }}
 
+      - name: Install dependencies
+        if: steps.composer-cache.outputs.cache-hit != 'true'
+        run: composer install --prefer-dist --no-progress --no-suggest
 
+      - name: Configure matchers
+        uses: mheap/phpunit-matcher-action@v1
+
+      - name: Run Tests
+        run: php vendor/bin/phpunit --log-junit=junit.xml --coverage-clover clover.xml --teamcity
+      - uses: EnricoMi/publish-unit-test-result-action@v2
+        if: github.actor != 'dependabot[bot]' && always()
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          files: .build/junit.xml
+
+      - name: Record Coverage
+        env:
+          COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: php vendor/bin/php-coveralls --coverage_clover=clover.xml --json_path=coveralls-upload.json
+
+      - name: Run Larastan 👨
+        run: ./vendor/bin/phpstan analyse --no-progress --error-format=checkstyle > larastan.xml
+
+      - name: Push Checkstyle report
+        if: always()
+        uses: jwgmeligmeyling/checkstyle-github-action@v1.2
+        with:
+          path: 'larastan.xml'
+          title: Larastan Report
 
