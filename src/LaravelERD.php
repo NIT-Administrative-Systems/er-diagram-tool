@@ -174,11 +174,7 @@ class LaravelERD
             'key'    => $this->modelName($model),
             'schema' => $nodeItems,
             'domain' => $this->domainName($model),
-
-            // @TODO
-            'ribbonText' => null,
-            'ribbonColour' => null ?? 'green',
-            'ribbonTextColour' => null ?? 'white',
+            ...(LaravelERDServiceProvider::getRibbonClosure()($model)?->toArray() ?? []),
         ];
     }
 
