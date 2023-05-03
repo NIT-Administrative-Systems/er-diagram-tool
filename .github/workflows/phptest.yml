@@ -38,6 +38,15 @@ jobs:
         if: steps.composer-cache.outputs.cache-hit != 'true'
         run: composer install --prefer-dist --no-progress --no-suggest
 
+      - name: Enforce Coding Style 🍺
+        if: github.ref == 'refs/heads/main'
+        run: ./vendor/bin/pint
+
+      - uses: stefanzweifel/git-auto-commit-action@v4.13.1
+        if: github.ref == 'refs/heads/main'
+        with:
+          commit_message: Apply pint code style changes
+
       - name: Configure matchers
         uses: mheap/phpunit-matcher-action@v1
 
