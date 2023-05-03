@@ -5,10 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"/>
     <meta name="description" content="Interactive entity-relationship diagram or data model diagram implemented by GoJS in JavaScript for HTML."/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.6/tailwind.min.css"/>
+    <link rel="stylesheet" href="https://unpkg.com/gojs@2.1.47/extensions/ZoomSlider.css"/>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.1.46/go.js"></script>
     <script src="https://unpkg.com/gojs@2.1.47/extensions/Figures.js"></script>
+    <script src="https://unpkg.com/gojs@2.1.47/extensions/ZoomSlider.js"></script>
+
     <title>Interactive Entity Relationship Diagram | {{ $appName }}</title>
 </head>
 <body class="bg-gray-100 tracking-wide bg-gray-200">
@@ -55,7 +58,8 @@
                     allowDelete: false,
                     allowCopy: false,
                     layout: $(go.LayeredDigraphLayout),
-                    "undoManager.isEnabled": true
+                    "undoManager.isEnabled": true,
+                    initialScale: 0.5,
                 });
 
         var itemTempl =
@@ -218,7 +222,12 @@
             linkFromPortIdProperty: "fromPort",
             linkToPortIdProperty: "toPort",
             nodeDataArray: nodeDataArray,
-            linkDataArray: linkDataArray
+            linkDataArray: linkDataArray,
+        });
+
+        zoomSlider = new ZoomSlider(myDiagram, {
+            alignment: go.Spot.TopLeft,
+            alignmentFocus: go.Spot.TopLeft,
         });
 
         loadFilterByTableNames()
