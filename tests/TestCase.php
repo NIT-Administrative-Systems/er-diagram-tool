@@ -2,9 +2,8 @@
 
 namespace Kevincobain2000\LaravelERD\Tests;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
-use Orchestra\Testbench\TestCase as Orchestra;
 use Kevincobain2000\LaravelERD\LaravelERDServiceProvider;
+use Orchestra\Testbench\TestCase as Orchestra;
 
 abstract class TestCase extends Orchestra
 {
