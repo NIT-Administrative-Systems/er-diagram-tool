@@ -2,8 +2,8 @@
 
 namespace Kevincobain2000\LaravelERD;
 
-use File;
-use Schema;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionMethod;
 use Throwable;
@@ -11,10 +11,12 @@ use TypeError;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 
 class LaravelERD
 {
-    public function getModelsNames(string $modelsPath)
+    public function getModelsNames(string $modelsPath): Collection
     {
         return collect(File::allFiles($modelsPath))
             ->map(function ($item) {
@@ -39,7 +41,7 @@ class LaravelERD
             });
     }
 
-    public function getLinkDataArray(string $modelsPath)
+    public function getLinkDataArray(string $modelsPath): array
     {
         $linkDataArray = [];
         $modelNames = $this->getModelsNames($modelsPath);
@@ -55,7 +57,7 @@ class LaravelERD
         return $linkDataArray;
     }
 
-    public function getNodeDataArray(string $modelsPath)
+    public function getNodeDataArray(string $modelsPath): array
     {
         $nodeDataArray = [];
         $modelNames = $this->getModelsNames($modelsPath);
@@ -69,7 +71,7 @@ class LaravelERD
         return $nodeDataArray;
     }
 
-    function removeDuplicateModelNames($modelNames)
+    function removeDuplicateModelNames($modelNames): array
     {
         $finalModelNames = collect($modelNames)
             ->map(function($modelName) {
@@ -85,7 +87,7 @@ class LaravelERD
         return $finalModelNames->all();
     }
 
-    private function extractNamespace($file)
+    private function extractNamespace($file): string
     {
         $ns = NULL;
         $handle = fopen($file, "r");
@@ -102,12 +104,6 @@ class LaravelERD
         return $ns;
     }
 
-    /**
-     * Relationships
-     *
-     * @param Model $model
-     * @return array of relationships
-     */
     private function getRelationships(Model $model): array
     {
         $relationships = [];
@@ -173,20 +169,21 @@ class LaravelERD
                 "info"   => config('laravel-erd.display.show_data_type') ? Schema::getColumnType($model->getTable(), $column) : "",
             ];
         }
+
         return [
-            "key"    => $model->getTable(),
-            "schema" => $nodeItems
+            'key'    => $this->modelName($model),
+            'schema' => $nodeItems,
+            'domain' => $this->domainName($model),
+            ...(LaravelERDServiceProvider::getRibbonClosure()($model)?->toArray() ?? []),
         ];
     }
 
-    private function getLinks(Model $model)
+    private function getLinks(Model $model): array
     {
         $relationships = $this->getRelationships($model);
         $linkItems = [];
-        foreach ($relationships as $relationship) {
-            $fromTable = $model->getTable();
-            $toTable = app($relationship['model'])->getTable();
 
+        foreach ($relationships as $relationship) {
             // check if is array for multiple primary key
             if (is_array($relationship['foreign_key']) || is_array($relationship['parent_key'])) {
                 // TODO add support for multiple primary keys
@@ -199,15 +196,25 @@ class LaravelERD
             }
 
             $linkItems[] = [
-                "from"     => $fromTable,
-                "to"       => $toTable,
+                "from"     => $this->modelName($model),
+                "to"       => $this->modelName(app($relationship['model'])),
                 "fromText" => config('laravel-erd.from_text.'.$relationship['type']),
                 "toText"   => config('laravel-erd.to_text.'.$relationship['type']),
                 "fromPort" => explode(".", $fromPort)[1], //strip tablename
-                "toPort"   => explode(".", $toPort)[1],//strip tablename
+                "toPort"   => explode(".", $toPort)[1], //strip tablename
                 "type"     => $relationship['type'],
             ];
         }
         return $linkItems;
+    }
+
+    private function modelName(Model $model): string
+    {
+        return Str::of($model::class)->explode('\\')->last();
+    }
+
+    private function domainName(Model $model): string
+    {
+        return Str::of(get_class($model))->match('/\\\Domains\\\([^\\\]*)\\\/i') ?: 'Uncategorized';
     }
 }

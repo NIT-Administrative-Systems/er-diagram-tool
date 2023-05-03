@@ -3,58 +3,49 @@
 namespace Kevincobain2000\LaravelERD\Commands;
 
 use Illuminate\Console\Command;
-use File;
+use Illuminate\Support\Facades\File;
+use Kevincobain2000\LaravelERD\Diagram\RoutingType;
 use Kevincobain2000\LaravelERD\LaravelERD;
 
 class LaravelERDCommand extends Command
 {
     public $signature = 'erd:generate';
-
     public $description = 'Generate ERD files';
 
-    protected $laravelERD;
+    private string $appName;
+    private string $modelsPath;
+    private string $destinationPath;
+    private RoutingType $routingType;
 
-    public function __construct(LaravelERD $laravelERD)
+    public function __construct()
     {
-        $this->laravelERD = $laravelERD;
         parent::__construct();
+
+        $this->modelsPath = config('laravel-erd.models_path');
+        $this->destinationPath = config('laravel-erd.docs_path');
+        $this->routingType = config('laravel-erd.display.routing');
+        $this->appName = config('app.name') ?? 'Laravel';
     }
 
-    /**
-     * Execute the console command.
-     *
-     * @return int
-     */
-    public function handle()
+    public function handle(LaravelERD $modelReflector): int
     {
-        $modelsPath      = config('laravel-erd.models_path') ?? base_path('app/Models');
-        $destinationPath = config('laravel-erd.docs_path') ?? base_path('docs/erd/');
-
-        // extract data
-        $linkDataArray = $this->laravelERD->getLinkDataArray($modelsPath);
-        $nodeDataArray = $this->laravelERD->getNodeDataArray($modelsPath);
-
-        if (! File::exists($destinationPath)) {
-            File::makeDirectory($destinationPath, 0755, true);
+        if (! File::exists($this->destinationPath)) {
+            File::makeDirectory($this->destinationPath, 0755, true);
         }
-        File::put($destinationPath . '/index.html',
+
+        File::put($this->destinationPath . '/index.html',
             view('erd::index')
                 ->with([
-                    'routingType' => config('laravel-erd.display.routing') ?? 'AvoidsNodes',
-
-                    // pretty print array to json
-                    'docs' => json_encode(
-                        [
-                            "link_data" => $linkDataArray,
-                            "node_data" => $nodeDataArray,
-                        ]
-                    ),
+                    'appName' => $this->appName,
+                    'routingType' => $this->routingType,
+                    'link_data' => $modelReflector->getLinkDataArray($this->modelsPath),
+                    'node_data' => $modelReflector->getNodeDataArray($this->modelsPath),
                 ])
                 ->render()
         );
 
-        $this->info("ERD data written successfully to $destinationPath");
+        $this->info("ERD data written successfully to {$this->destinationPath}");
 
-        return 0;
+        return self::SUCCESS;
     }
 }
