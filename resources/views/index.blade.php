@@ -25,18 +25,18 @@
         </div>
 
         <div class="text-sm">
-            <input type="checkbox" id="input-table-names-checkbox-check-all"> check all
+            <input type="checkbox" id="input-table-names-checkbox-check-all"> <label for="input-table-names-checkbox-check-all">check all models</label>
         </div>
         <div id="filter-by-table-name"></div>
 
-        <b class="text-sm">Filter by Relation Type</b>
+        <b class="text-sm mt-4 block">Filter by Relation Type</b>
         <div class="text-sm">
-            <input type="checkbox" class="text-sm" id="input-relation-type-checkbox-check-all"> check all
+            <input type="checkbox" class="text-sm" id="input-relation-type-checkbox-check-all"> <label for="input-relation-type-checkbox-check-all">check all</label>
         </div>
 
         <div id="filter-by-relation-type"></div>
     </aside>
-    <div class="pl-2 w-10/12 bg-gray-300">
+    <div class="pl-2 w-10/12 bg-gray-300 relative">
         <div id="myDiagramDiv" style="background-color: white; width: 100%; height: 100vh"></div>
     </div>
 </div>
@@ -261,16 +261,18 @@
             if ($.inArray(this.type, appended) == -1) {
                 // append
                 appended.push(this.type)
-                $("#filter-by-relation-type").append($("<div class='text-sm'>").text('' + this.type).prepend(
-                    $("<input>").attr({
+                $("#filter-by-relation-type").append($("<div class='text-sm'>")
+                    .append(` <label for="relationship-${this.type}">${this.type}</label>`)
+                    .prepend($("<input>").attr({
                         'type': 'checkbox',
                         'checked': true,
                         'class': 'input-relation-type-checkbox',
                         'name': 'subscribe-relation-type',
-                        "data-feed": this.type
+                        "data-feed": this.type,
+                        'id': `relationship-${this.type}`,
                     })
-                        .val(this.type)
-                        .prop('checked', this.type === 'BelongsTo') // Super noisy if you default them all on
+                    .val(this.type)
+                    .prop('checked', this.type === 'BelongsTo') // Super noisy if you default them all on
                 ));
             }
         });
@@ -303,8 +305,6 @@
         var nodesByDomain = unbucketedNodes.reduce((group, model) => {
            const { domain } = model;
 
-           console.log(domain);
-
             group[domain] = group[domain] ?? [];
             group[domain].push(model);
 
@@ -313,30 +313,34 @@
 
         for (const domain in nodesByDomain) {
             $("#filter-by-table-name").append(
-                $("<h2 class='pt-2'>").append(
+                $("<h2 class='mt-4 mb-1 bg-gray-300'>").append(
                     $("<input>").attr({
                         'type': 'checkbox',
                         'checked': true,
                         'class': 'input-domain-checkbox',
-                        'name': 'subscribe-domain',
+                        'name': `subscribe-domain-${domain}`,
                         'data-domain': domain,
+                        'id': `domain-${domain}`,
                     })
-                ).append(' ' + domain)
+                ).append(` <label for="domain-${domain}">${domain}</label>`)
             );
 
             $.each(nodesByDomain[domain], function (i, v) {
                 // check if doesn't exist in the array
                 if ($.inArray(this.key, appended) == -1) {
                     // append
-                    appended.push(this.key)
-                    $("#filter-by-table-name").append($("<div class='text-sm'>").text(' ' + this.key).prepend(
-                        $("<input>").attr({
+                    appended.push(this.key);
+
+                    $("#filter-by-table-name").append($("<div class='ml-1 text-sm'>")
+                        .append(` <label for="table-${this.key}">${this.key}</label>`)
+                        .prepend($("<input>").attr({
                             'type': 'checkbox',
                             'checked': true,
                             'class': 'input-table-name-checkbox',
                             'name': 'subscribe-table-name',
                             'data-feed': this.key,
                             'data-domain': this.domain,
+                            'id': 'table-' + this.key,
                         }).val(this.key)
                             .prop('checked', this.checked)
                     ));
@@ -348,8 +352,20 @@
             setCheckboxesForTableNames();
             setCheckboxesForRelationTypes();
         });
-    }
 
+        $('.input-domain-checkbox').on('change', function() {
+            const domain = $(this).data('domain');
+            const checked = $(this).prop('checked');
+
+            $(`.input-table-name-checkbox[data-domain=${domain}]`).each(function () {
+
+                $(this).prop('checked', checked);
+            });
+
+            setCheckboxesForTableNames();
+            setCheckboxesForRelationTypes();
+        });
+    }
 
     $("#input-relation-type-checkbox-check-all").on('change', function() {
         $(".input-relation-type-checkbox").prop('checked', this.checked);
@@ -358,7 +374,7 @@
     });
 
     $("#input-table-names-checkbox-check-all").on('change', function() {
-        $(".input-table-name-checkbox").prop('checked', this.checked);
+        $(".input-table-name-checkbox, .input-domain-checkbox").prop('checked', this.checked);
         setCheckboxesForTableNames();
         setCheckboxesForRelationTypes();
     });
