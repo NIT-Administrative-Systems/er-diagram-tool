@@ -174,8 +174,11 @@ class LaravelERD
             'key'    => $this->modelName($model),
             'schema' => $nodeItems,
             'domain' => $this->domainName($model),
-            'external' => true,
-            'externalSource' => 'CAESAR',
+
+            // @TODO
+            'ribbonText' => null,
+            'ribbonColour' => null ?? 'green',
+            'ribbonTextColour' => null ?? 'white',
         ];
     }
 

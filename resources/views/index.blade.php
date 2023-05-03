@@ -165,8 +165,36 @@
                             itemTemplate: itemTempl,
                         },
                         new go.Binding("itemArray", "schema"))
-                ) // end Table Panel
+                ), // end Table Panel
+
+                $(go.Panel, "Spot",
+                    new go.Binding("opacity", "ribbonText", t => t ? 1 : 0),
+                    // note that the opacity defaults to zero (not visible),
+                    // in case there is no "ribbon" property
+                    { opacity: 0,
+                        alignment: new go.Spot(1, 0, 5, -5),
+                        alignmentFocus: go.Spot.TopRight },
+
+                    // the ribbon itself
+                    $(go.Shape, {
+                        geometryString: "F1 M0 0 L30 0 70 40 70 70z",
+                        stroke: null,
+                        strokeWidth: 0,
+                    }, new go.Binding('fill', "ribbonColour")),
+                    $(go.TextBlock,
+                        new go.Binding("text", "ribbonText"),
+                        {
+                            alignment: new go.Spot(1, 0, -29, 29),
+                            angle: 45,
+                            maxSize: new go.Size(100, NaN),
+                            font: "bold 13px sans-serif",
+                            textAlign: "center",
+                        },
+                        new go.Binding('stroke', "ribbonTextColour")
+                    )
+                )
             ); // end Node
+
         // define the Link template, representing a relationship
         myDiagram.linkTemplate =
             $(go.Link, // the whole link panel
