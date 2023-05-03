@@ -2,17 +2,17 @@
 
 namespace Kevincobain2000\LaravelERD;
 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionMethod;
 use Throwable;
 use TypeError;
-use Illuminate\Database\QueryException;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Schema;
 
 class LaravelERD
 {
@@ -21,12 +21,13 @@ class LaravelERD
         return collect(File::allFiles($modelsPath))
             ->map(function ($item) {
                 $path = $item->getFilename();
-                $namespace = $this->extractNamespace($item->getRealPath()) . '\\';
+                $namespace = $this->extractNamespace($item->getRealPath()).'\\';
                 $class = sprintf(
                     '\%s%s',
                     $namespace,
                     strtr(substr($path, 0, strrpos($path, '.')), '/', '\\')
                 );
+
                 return $class;
             })
             ->filter(function ($class) {
@@ -34,7 +35,7 @@ class LaravelERD
 
                 if (class_exists($class)) {
                     $reflection = new ReflectionClass($class);
-                    $valid = $reflection->isSubclassOf(Model::class) && !$reflection->isAbstract();
+                    $valid = $reflection->isSubclassOf(Model::class) && ! $reflection->isAbstract();
                 }
 
                 return $valid;
@@ -68,14 +69,16 @@ class LaravelERD
 
             $nodeDataArray[] = $this->getNodes($model);
         }
+
         return $nodeDataArray;
     }
 
-    function removeDuplicateModelNames($modelNames): array
+    public function removeDuplicateModelNames($modelNames): array
     {
         $finalModelNames = collect($modelNames)
-            ->map(function($modelName) {
+            ->map(function ($modelName) {
                 $model = app($modelName);
+
                 return [
                     'model_name' => $modelName,
                     'table' => $model->getTable(),
@@ -89,8 +92,8 @@ class LaravelERD
 
     private function extractNamespace($file): string
     {
-        $ns = NULL;
-        $handle = fopen($file, "r");
+        $ns = null;
+        $handle = fopen($file, 'r');
         if ($handle) {
             while (($line = fgets($handle)) !== false) {
                 if (strpos($line, 'namespace') === 0) {
@@ -101,6 +104,7 @@ class LaravelERD
             }
             fclose($handle);
         }
+
         return $ns;
     }
 
@@ -111,7 +115,7 @@ class LaravelERD
 
         foreach ((new ReflectionClass($model))->getMethods(ReflectionMethod::IS_PUBLIC) as $method) {
             if ($method->class != get_class($model)
-                || !empty($method->getParameters())
+                || ! empty($method->getParameters())
                 || $method->getName() == __FUNCTION__
             ) {
                 continue;
@@ -120,7 +124,7 @@ class LaravelERD
             try {
                 $return = $method->invoke($model);
                 // check if not instance of Relation
-                if (!($return instanceof Relation)) {
+                if (! ($return instanceof Relation)) {
                     continue;
                 }
                 $relationType = (new ReflectionClass($return))->getShortName();
@@ -134,10 +138,10 @@ class LaravelERD
                 }
 
                 $relationships[$method->getName()] = [
-                    'type'        => $relationType,
-                    'model'       => $modelName,
+                    'type' => $relationType,
+                    'model' => $modelName,
                     'foreign_key' => $foreignKey,
-                    'parent_key'  => $parentKey,
+                    'parent_key' => $parentKey,
                 ];
             } catch (QueryException $e) {
                 // ignore
@@ -162,16 +166,16 @@ class LaravelERD
             $isPrimaryKey = $column == $keyName;
 
             $nodeItems[] = [
-                "name"   => $column,
-                "isKey"  => $isPrimaryKey,
-                "figure" => $isPrimaryKey ? "Hexagon" : "Decision",
-                "color"  => $isPrimaryKey ? "#be4b15" : "#6ea5f8",
-                "info"   => config('laravel-erd.display.show_data_type') ? Schema::getColumnType($model->getTable(), $column) : "",
+                'name' => $column,
+                'isKey' => $isPrimaryKey,
+                'figure' => $isPrimaryKey ? 'Hexagon' : 'Decision',
+                'color' => $isPrimaryKey ? '#be4b15' : '#6ea5f8',
+                'info' => config('laravel-erd.display.show_data_type') ? Schema::getColumnType($model->getTable(), $column) : '',
             ];
         }
 
         return [
-            'key'    => $this->modelName($model),
+            'key' => $this->modelName($model),
             'schema' => $nodeItems,
             'domain' => $this->domainName($model),
             ...(LaravelERDServiceProvider::getRibbonClosure()($model)?->toArray() ?? []),
@@ -187,24 +191,25 @@ class LaravelERD
             // check if is array for multiple primary key
             if (is_array($relationship['foreign_key']) || is_array($relationship['parent_key'])) {
                 // TODO add support for multiple primary keys
-                $fromPort = ".";
-                $toPort = ".";
+                $fromPort = '.';
+                $toPort = '.';
             } else {
-                $isBelongsTo = ($relationship['type'] == "BelongsTo" || $relationship['type'] == "BelongsToMany");
-                $fromPort = $isBelongsTo ? $relationship["foreign_key"] : $relationship["parent_key"];
-                $toPort   = $isBelongsTo ? $relationship["parent_key"] : $relationship["foreign_key"];
+                $isBelongsTo = ($relationship['type'] == 'BelongsTo' || $relationship['type'] == 'BelongsToMany');
+                $fromPort = $isBelongsTo ? $relationship['foreign_key'] : $relationship['parent_key'];
+                $toPort = $isBelongsTo ? $relationship['parent_key'] : $relationship['foreign_key'];
             }
 
             $linkItems[] = [
-                "from"     => $this->modelName($model),
-                "to"       => $this->modelName(app($relationship['model'])),
-                "fromText" => config('laravel-erd.from_text.'.$relationship['type']),
-                "toText"   => config('laravel-erd.to_text.'.$relationship['type']),
-                "fromPort" => explode(".", $fromPort)[1], //strip tablename
-                "toPort"   => explode(".", $toPort)[1], //strip tablename
-                "type"     => $relationship['type'],
+                'from' => $this->modelName($model),
+                'to' => $this->modelName(app($relationship['model'])),
+                'fromText' => config('laravel-erd.from_text.'.$relationship['type']),
+                'toText' => config('laravel-erd.to_text.'.$relationship['type']),
+                'fromPort' => explode('.', $fromPort)[1], //strip tablename
+                'toPort' => explode('.', $toPort)[1], //strip tablename
+                'type' => $relationship['type'],
             ];
         }
+
         return $linkItems;
     }
 

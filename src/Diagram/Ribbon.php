@@ -8,8 +8,7 @@ class Ribbon
         public readonly string $text,
         public readonly string $bgColour,
         public readonly string $textColour = 'white',
-    )
-    {
+    ) {
         //
     }
 
