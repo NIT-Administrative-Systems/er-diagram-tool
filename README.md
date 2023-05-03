@@ -7,7 +7,7 @@ This package is a heavily-customized fork from [kevincobain2000/laravel-erd](htt
 You can install the package via composer.
 
 ```bash
-composer require kevincobain2000/laravel-erd --dev
+composer require northwestern-sysdev/er-diagram-tool --dev
 ```
 
 ## Usage
