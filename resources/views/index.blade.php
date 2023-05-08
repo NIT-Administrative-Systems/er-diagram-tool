@@ -4,7 +4,7 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"/>
     <meta name="description" content="Interactive entity-relationship diagram or data model diagram implemented by GoJS in JavaScript for HTML."/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.6/tailwind.min.css"/>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://unpkg.com/gojs@2.1.47/extensions/ZoomSlider.css"/>
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -16,30 +16,57 @@
 </head>
 <body class="bg-gray-100 tracking-wide bg-gray-200">
 <div id="app" v-cloak class="w-full flex">
-    <aside class="text-xl text-grey-darkest break-all bg-gray-200 pl-2 h-screen sticky top-1 overflow-auto">
-        <b class="text-sm"><label for="search">Search &amp; Filter by Model</label></b>
-        <div class="text-sm flex pb-4">
-            <div class="flex-initial flex-grow">
-                <input type="text" placeholder="Model name..." class="block border py-2 px-3 text-grey-darkest w-full" id="search" onkeypress="if (event.keyCode === 13) searchDiagram()">
-            </div>
-            <div class="flex-initial">
-                <button class="block border bg-blue-200 hover:bg-blue-300 p-2 h-100" onclick="searchDiagram()">Search</button>
+    <aside class="text-xl text-grey-darkest break-all bg-gray-200 pl-2 pr-2 h-screen sticky top-1 overflow-auto">
+        <div class="pt-2 pb-4">
+            <h3 class="text-base font-bold leading-6 text-gray-900">Search &amp; Filter by Models</h3>
+            <div class="flex items-center pt-2">
+                <label for="search" class="sr-only">Model Search</label>
+                <div class="relative w-full">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <svg aria-hidden="true" class="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd"
+                                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                                  clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <input type="text" name="search" id="search"
+                           class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5"
+                           placeholder="Model name..." onkeypress="if (event.keyCode === 13) searchDiagram()">
+                </div>
+                <button onclick="searchDiagram()"
+                        class="p-2.5 ml-2 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                         xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <span class="sr-only">Search</span>
+                </button>
             </div>
         </div>
-
-        <div class="text-sm">
-            <input type="checkbox" id="input-table-names-checkbox-check-all"> <label for="input-table-names-checkbox-check-all">check all models</label>
+        <div class="relative flex items-start pb-3 border-b-[1px] border-gray-300">
+            <div class="flex h-6 items-center">
+                <input id="input-table-names-checkbox-check-all" aria-describedby="checkbox-check-all"
+                       name="input-table-names-checkbox-check-all" type="checkbox"
+                       class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600">
+            </div>
+            <div class="ml-3 text-sm leading-6">
+                <label for="input-table-names-checkbox-check-all" class="font-semibold text-gray-900">Check All
+                    Models</label>
+            </div>
         </div>
         <div id="filter-by-table-name"></div>
 
-        <b class="text-sm mt-4 block">Filter by Relation Type</b>
-        <div class="text-sm">
-            <input type="checkbox" class="text-sm" id="input-relation-type-checkbox-check-all"> <label for="input-relation-type-checkbox-check-all">check all</label>
+        <div class="mt-4 pb-3 pt-3 text-sm border-t-[1px] border-gray-300">
+            <h3 class="text-base font-bold leading-6">Filter by Relation Type</h3>
+            <input type="checkbox" class="text-sm mb-2" id="input-relation-type-checkbox-check-all"> <label
+                for="input-relation-type-checkbox-check-all">Check All</label>
+            <div id="filter-by-relation-type" class="space-y-3"></div>
         </div>
 
-        <div id="filter-by-relation-type"></div>
     </aside>
-    <div class="pl-2 w-10/12 bg-gray-300 relative">
+    <div class="w-10/12 bg-gray-300 relative">
         <div id="myDiagramDiv" style="background-color: white; width: 100%; height: 100vh"></div>
     </div>
 </div>
@@ -299,7 +326,7 @@
                 // append
                 appended.push(this.type)
                 $("#filter-by-relation-type").append($("<div class='text-sm'>")
-                    .append(` <label for="relationship-${this.type}">${this.type}</label>`)
+                    .append(` <label for="relationship-${this.type}" class="px-2 py-1.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded-lg dark:bg-gray-600 dark:text-gray-100 dark:border-gray-500"><code>${this.type}</code></label>`)
                     .prepend($("<input>").attr({
                         'type': 'checkbox',
                         'checked': true,
@@ -350,16 +377,17 @@
 
         for (const domain in nodesByDomain) {
             $("#filter-by-table-name").append(
-                $("<h2 class='mt-4 mb-1 bg-gray-300'>").append(
-                    $("<input>").attr({
-                        'type': 'checkbox',
-                        'checked': true,
-                        'class': 'input-domain-checkbox',
-                        'name': `subscribe-domain-${domain}`,
-                        'data-domain': domain,
-                        'id': `domain-${domain}`,
-                    })
-                ).append(` <label for="domain-${domain}">${domain}</label>`)
+                $("<h2 class='mt-4 mb-1 p-2 text-lg font-semibold bg-gray-300 rounded-lg'>").append(
+                    $("<div class='flex items-center'>").append(
+                        $("<input>").attr({
+                            'type': 'checkbox',
+                            'checked': true,
+                            'class': 'input-domain-checkbox',
+                            'name': `subscribe-domain-${domain}`,
+                            'data-domain': domain,
+                            'id': `domain-${domain}`,
+                        }),
+                        $("<label class='leading-6 ml-2'>").attr('for', `domain-${domain}`).text(domain)))
             );
 
             $.each(nodesByDomain[domain], function (i, v) {
@@ -368,7 +396,7 @@
                     // append
                     appended.push(this.key);
 
-                    $("#filter-by-table-name").append($("<div class='ml-1 text-sm'>")
+                    $("#filter-by-table-name").append($("<div class='ml-4 mb-0.5 text-sm'>")
                         .append(` <label for="table-${this.key}">${this.key}</label>`)
                         .prepend($("<input>").attr({
                             'type': 'checkbox',
