@@ -23,7 +23,7 @@ class LaravelERDServiceProvider extends PackageServiceProvider
     }
 
     /**
-     * @param Closure(Model):(null|Ribbon) $extractorClosure
+     * @param  Closure(Model):(null|Ribbon)  $extractorClosure
      */
     public static function setRibbonClosure(Closure $extractorClosure): void
     {
