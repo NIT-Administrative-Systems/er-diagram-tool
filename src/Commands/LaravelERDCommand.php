@@ -27,8 +27,14 @@ class LaravelERDCommand extends Command
 
         $this->modelsPath = config('laravel-erd.models_path');
         $this->destinationPath = config('laravel-erd.docs_path');
-        $this->routingType = config('laravel-erd.display.routing');
         $this->appName = config('app.name') ?? 'Laravel';
+
+        $routing = config('laravel-erd.display.routing');
+        if (is_string($routing)) {
+            $routing = RoutingType::from($routing);
+        }
+
+        $this->routingType = $routing;
     }
 
     public function handle(LaravelERD $modelReflector): int
