@@ -149,7 +149,7 @@ class LaravelERD
                 // ignore
             } catch (Throwable $e) {
                 // throw $e;
-                //ignore
+                // ignore
             }
         }
 
@@ -204,8 +204,8 @@ class LaravelERD
                 'to' => $this->modelName(app($relationship['model'])),
                 'fromText' => config('laravel-erd.from_text.'.$relationship['type']),
                 'toText' => config('laravel-erd.to_text.'.$relationship['type']),
-                'fromPort' => explode('.', $fromPort)[1], //strip tablename
-                'toPort' => explode('.', $toPort)[1], //strip tablename
+                'fromPort' => explode('.', $fromPort)[1], // strip tablename
+                'toPort' => explode('.', $toPort)[1], // strip tablename
                 'type' => $relationship['type'],
             ];
         }
