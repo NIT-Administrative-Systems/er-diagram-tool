@@ -43,8 +43,15 @@ class LaravelERDCommand extends Command
             File::makeDirectory($this->destinationPath, 0755, true);
         }
 
+        /**
+         * I think the package erd:: prefix is confusing it; it doesn't see this as a view-string.
+         *
+         * @var view-string $view
+         */
+        $view = 'erd::index';
+
         File::put($this->destinationPath.'/index.html',
-            view('erd::index')
+            view($view)
                 ->with([
                     'appName' => $this->appName,
                     'routingType' => $this->routingType->value,
